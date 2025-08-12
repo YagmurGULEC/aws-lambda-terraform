@@ -1,0 +1,11 @@
+**/terraform.tfstate
+**/terraform.tfstate.backup
+**/terraform.tfvars
+**/terraform.tfvars.json
+**/terraform.tfstate.d/
+**/.terraform/
+**/.terraform.lock.hcl
+function.zip
+numpy-layer.zip
+.localstack
+layers/

@@ -1,0 +1,21 @@
+# docker-compose.yml
+services:
+  localstack:
+    image: localstack/localstack:latest
+    ports:
+      - "4566:4566" # edge port
+      - "4510-4559:4510-4559" # lambda exec ports
+    environment:
+      - SERVICES=lambda,logs,iam,s3,events
+      - DEBUG=1
+      - LAMBDA_EXECUTOR=docker # run lambdas in docker
+      - LAMBDA_DOCKER_NETWORK=localstack
+      - DOCKER_HOST=unix:///var/run/docker.sock
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "./.localstack:/var/lib/localstack"
+    networks:
+      - localstack
+networks:
+  localstack:
+    name: localstack
