@@ -31,15 +31,26 @@ resource "random_id" "bucket_suffix" {
   byte_length = 4
 }
 # Create the function zip (this will be more reliable than external script)
-data "archive_file" "lambda_zip" {
-  type        = "zip"
-  source_dir  = "${path.module}/../lambda_handler"
-  output_path = "${path.module}/../function.zip"
+# data "archive_file" "lambda_zip" {
+#   type        = "zip"
+#   source_dir  = "${path.module}/../lambda_handler"
+#   output_path = "${path.module}/../function.zip"
 
-  # Force recreation when any .py file changes
-  depends_on = [
-    # Add any dependencies that should trigger rebuild
-  ]
+#   # Force recreation when any .py file changes
+#   depends_on = [
+#     # Add any dependencies that should trigger rebuild
+#   ]
+# }
+variable "lambda_zip_path" {
+  type = string
+  # e.g. "../function.zip"
+  default = "../function.zip" # Path to the zip file containing your Lambda function code
+}
+
+locals {
+  zip_path = var.lambda_zip_path
+  zip_md5  = filemd5(local.zip_path)
+  zip_b64  = filebase64sha256(local.zip_path)
 }
 
 # Bucket for code & layers
@@ -50,31 +61,12 @@ resource "aws_s3_bucket" "artifacts" {
 # Upload function code - force update when content changes
 resource "aws_s3_object" "function_zip" {
   bucket = aws_s3_bucket.artifacts.id
-  key    = "function-${data.archive_file.lambda_zip.output_md5}.zip" # Include hash in key
-  source = data.archive_file.lambda_zip.output_path
-  etag   = data.archive_file.lambda_zip.output_md5
+  key    = "function-${local.zip_md5}.zip" # Include hash in key
+  source = local.zip_path
+  etag   = local.zip_b64
 }
 
-# Upload your prebuilt numpy layer zip
-resource "aws_s3_object" "numpy_layer_zip" {
-  bucket = aws_s3_bucket.artifacts.id
-  key    = "numpy-layer-${filemd5("${path.module}/../numpy-layer.zip")}.zip" # Include hash in key
-  source = "${path.module}/../numpy-layer.zip"
-  etag   = filemd5("${path.module}/../numpy-layer.zip")
-}
 
-# Create layer
-resource "aws_lambda_layer_version" "numpy" {
-  layer_name               = "numpy"
-  s3_bucket                = aws_s3_bucket.artifacts.id
-  s3_key                   = aws_s3_object.numpy_layer_zip.key
-  compatible_runtimes      = ["python3.10"]
-  compatible_architectures = ["x86_64"]
-  description              = "NumPy layer"
-
-  # Force new version when layer content changes
-  source_code_hash = filebase64sha256("${path.module}/../numpy-layer.zip")
-}
 
 # IAM role
 resource "aws_iam_role" "lambda_exec" {
@@ -105,22 +97,17 @@ resource "aws_lambda_function" "matrix_mul" {
 
   s3_bucket        = aws_s3_bucket.artifacts.id
   s3_key           = aws_s3_object.function_zip.key
-  source_code_hash = data.archive_file.lambda_zip.output_base64sha256
+  source_code_hash = local.zip_md5
 
   memory_size = 512
   timeout     = 15
 
-  layers = [aws_lambda_layer_version.numpy.arn]
+  #   layers = [aws_lambda_layer_version.numpy.arn]
 
-  #   environment {
-  #     variables = {
-  #       PYTHONPATH = "/opt/python"
-  #     }
-  #   }
 
   depends_on = [
     aws_iam_role_policy_attachment.lambda_basic,
-    aws_lambda_layer_version.numpy
+    # aws_lambda_layer_version.numpy
   ]
 }
 
@@ -133,6 +120,3 @@ output "function_arn" {
   value = aws_lambda_function.matrix_mul.arn
 }
 
-output "layer_arn" {
-  value = aws_lambda_layer_version.numpy.arn
-}

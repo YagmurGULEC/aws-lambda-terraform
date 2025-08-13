@@ -9,3 +9,12 @@ function.zip
 numpy-layer.zip
 .localstack
 layers/
+.venv/
+venv/
+**/venv/
+**/.venv/
+**/.localstack/
+./lambda_handler/__pycache__/
+./lambda_handler/*.pyc
+./lambda_handler/python/
+./lambda_handler/package/
