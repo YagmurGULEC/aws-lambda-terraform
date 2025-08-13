@@ -30,41 +30,6 @@ provider "aws" {
 resource "random_id" "bucket_suffix" {
   byte_length = 4
 }
-# Create the function zip (this will be more reliable than external script)
-# data "archive_file" "lambda_zip" {
-#   type        = "zip"
-#   source_dir  = "${path.module}/../lambda_handler"
-#   output_path = "${path.module}/../function.zip"
-
-#   # Force recreation when any .py file changes
-#   depends_on = [
-#     # Add any dependencies that should trigger rebuild
-#   ]
-# }
-variable "lambda_zip_path" {
-  type = string
-  # e.g. "../function.zip"
-  default = "../function.zip" # Path to the zip file containing your Lambda function code
-}
-
-locals {
-  zip_path = var.lambda_zip_path
-  zip_md5  = filemd5(local.zip_path)
-  zip_b64  = filebase64sha256(local.zip_path)
-}
-
-# Bucket for code & layers
-resource "aws_s3_bucket" "artifacts" {
-  bucket = "tf-lambda-artifacts-${random_id.bucket_suffix.hex}"
-}
-
-# Upload function code - force update when content changes
-resource "aws_s3_object" "function_zip" {
-  bucket = aws_s3_bucket.artifacts.id
-  key    = "function-${local.zip_md5}.zip" # Include hash in key
-  source = local.zip_path
-  etag   = local.zip_b64
-}
 
 
 
@@ -91,16 +56,10 @@ resource "aws_iam_role_policy_attachment" "lambda_basic" {
 resource "aws_lambda_function" "matrix_mul" {
   function_name = "matrix-mul"
   role          = aws_iam_role.lambda_exec.arn
-  runtime       = "python3.10"
-  handler       = "handler.lambda_handler" # file.function
-  architectures = ["x86_64"]
-
-  s3_bucket        = aws_s3_bucket.artifacts.id
-  s3_key           = aws_s3_object.function_zip.key
-  source_code_hash = local.zip_md5
-
-  memory_size = 512
-  timeout     = 15
+  package_type  = "Image"
+  image_uri     = var.ecr_repo_url
+  memory_size   = 512
+  timeout       = 15
 
   #   layers = [aws_lambda_layer_version.numpy.arn]
 
@@ -119,4 +78,5 @@ output "function_name" {
 output "function_arn" {
   value = aws_lambda_function.matrix_mul.arn
 }
+
 
