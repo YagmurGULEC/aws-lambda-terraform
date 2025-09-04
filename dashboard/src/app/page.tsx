@@ -237,7 +237,7 @@ export default function JobWithCharts() {
 
           <div className="w-full overflow-hidden rounded-lg border">
             <Image
-              src={`${basePath}/graph.svg`}
+              src={`${basePath}/AthenaLambda.drawio.svg`}
               alt="Graph"
               width={1600}
               height={900}
