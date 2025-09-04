@@ -4,9 +4,11 @@ resource "aws_apigatewayv2_api" "this" {
   protocol_type = "HTTP"
 
   cors_configuration {
-    allow_origins = ["*"] # tighten for prod
-    allow_methods = ["GET", "POST", "OPTIONS"]
-    allow_headers = ["Content-Type", "Authorization"]
+    allow_origins  = ["https://yagmurgulec.github.io"] # tighten for prod
+    allow_methods  = ["GET", "POST", "OPTIONS"]
+    allow_headers  = ["Content-Type", "Authorization"]
+    expose_headers = ["Content-Type", "Authorization"]
+    max_age        = 3600
   }
 }
 
