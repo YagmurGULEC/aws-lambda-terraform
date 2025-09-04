@@ -1,6 +1,6 @@
 1. Pack the code 
 ```
-bash pack_layer.sh
+source deploy_lambda_docker.sh
 ```
 2. Then go to infra/
 ```
