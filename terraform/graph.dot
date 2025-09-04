@@ -1,0 +1,77 @@
+digraph G {
+  rankdir = "RL";
+  node [shape = rect, fontname = "sans-serif"];
+  subgraph "cluster_module.apigw" {
+    label = "module.apigw"
+    fontname = "sans-serif"
+    "module.apigw.aws_apigatewayv2_api.this" [label="aws_apigatewayv2_api.this"];
+    "module.apigw.aws_apigatewayv2_integration.lambda" [label="aws_apigatewayv2_integration.lambda"];
+    "module.apigw.aws_apigatewayv2_route.get_job_id" [label="aws_apigatewayv2_route.get_job_id"];
+    "module.apigw.aws_apigatewayv2_route.get_jobs" [label="aws_apigatewayv2_route.get_jobs"];
+    "module.apigw.aws_apigatewayv2_route.options_jobs" [label="aws_apigatewayv2_route.options_jobs"];
+    "module.apigw.aws_apigatewayv2_route.post_jobs" [label="aws_apigatewayv2_route.post_jobs"];
+    "module.apigw.aws_apigatewayv2_stage.prod" [label="aws_apigatewayv2_stage.prod"];
+    "module.apigw.aws_cloudwatch_log_group.api_logs" [label="aws_cloudwatch_log_group.api_logs"];
+    "module.apigw.aws_lambda_permission.allow_http_api" [label="aws_lambda_permission.allow_http_api"];
+  }
+  subgraph "cluster_module.job_queue" {
+    label = "module.job_queue"
+    fontname = "sans-serif"
+    "module.job_queue.aws_sqs_queue.job_queue" [label="aws_sqs_queue.job_queue"];
+  }
+  subgraph "cluster_module.job_table" {
+    label = "module.job_table"
+    fontname = "sans-serif"
+    "module.job_table.aws_dynamodb_table.this" [label="aws_dynamodb_table.this"];
+  }
+  subgraph "cluster_module.producer_lambda" {
+    label = "module.producer_lambda"
+    fontname = "sans-serif"
+    "module.producer_lambda.aws_iam_role.lambda_exec" [label="aws_iam_role.lambda_exec"];
+    "module.producer_lambda.aws_iam_role_policy.lambda_permissions" [label="aws_iam_role_policy.lambda_permissions"];
+    "module.producer_lambda.aws_iam_role_policy_attachment.lambda_basic" [label="aws_iam_role_policy_attachment.lambda_basic"];
+    "module.producer_lambda.aws_lambda_function.this" [label="aws_lambda_function.this"];
+    "module.producer_lambda.aws_s3_bucket.artifacts" [label="aws_s3_bucket.artifacts"];
+    "module.producer_lambda.aws_s3_object.function_zip" [label="aws_s3_object.function_zip"];
+    "module.producer_lambda.random_id.bucket_suffix" [label="random_id.bucket_suffix"];
+  }
+  subgraph "cluster_module.worker_lambda" {
+    label = "module.worker_lambda"
+    fontname = "sans-serif"
+    "module.worker_lambda.aws_athena_workgroup.dash_wg" [label="aws_athena_workgroup.dash_wg"];
+    "module.worker_lambda.aws_iam_role.lambda_exec" [label="aws_iam_role.lambda_exec"];
+    "module.worker_lambda.aws_iam_role_policy.lambda_worker_permissions" [label="aws_iam_role_policy.lambda_worker_permissions"];
+    "module.worker_lambda.aws_iam_role_policy_attachment.lambda_basic" [label="aws_iam_role_policy_attachment.lambda_basic"];
+    "module.worker_lambda.aws_lambda_event_source_mapping.from_sqs" [label="aws_lambda_event_source_mapping.from_sqs"];
+    "module.worker_lambda.aws_lambda_function.worker_lambda" [label="aws_lambda_function.worker_lambda"];
+    "module.worker_lambda.random_id.bucket_suffix" [label="random_id.bucket_suffix"];
+  }
+  "module.apigw.aws_apigatewayv2_integration.lambda" -> "module.apigw.aws_apigatewayv2_api.this";
+  "module.apigw.aws_apigatewayv2_integration.lambda" -> "module.producer_lambda.aws_lambda_function.this";
+  "module.apigw.aws_apigatewayv2_route.get_job_id" -> "module.apigw.aws_apigatewayv2_integration.lambda";
+  "module.apigw.aws_apigatewayv2_route.get_jobs" -> "module.apigw.aws_apigatewayv2_integration.lambda";
+  "module.apigw.aws_apigatewayv2_route.options_jobs" -> "module.apigw.aws_apigatewayv2_integration.lambda";
+  "module.apigw.aws_apigatewayv2_route.post_jobs" -> "module.apigw.aws_apigatewayv2_integration.lambda";
+  "module.apigw.aws_apigatewayv2_stage.prod" -> "module.apigw.aws_apigatewayv2_api.this";
+  "module.apigw.aws_apigatewayv2_stage.prod" -> "module.apigw.aws_cloudwatch_log_group.api_logs";
+  "module.apigw.aws_lambda_permission.allow_http_api" -> "module.apigw.aws_apigatewayv2_api.this";
+  "module.apigw.aws_lambda_permission.allow_http_api" -> "module.producer_lambda.aws_lambda_function.this";
+  "module.producer_lambda.aws_iam_role_policy.lambda_permissions" -> "module.job_queue.aws_sqs_queue.job_queue";
+  "module.producer_lambda.aws_iam_role_policy.lambda_permissions" -> "module.job_table.aws_dynamodb_table.this";
+  "module.producer_lambda.aws_iam_role_policy.lambda_permissions" -> "module.producer_lambda.aws_iam_role.lambda_exec";
+  "module.producer_lambda.aws_iam_role_policy_attachment.lambda_basic" -> "module.producer_lambda.aws_iam_role.lambda_exec";
+  "module.producer_lambda.aws_lambda_function.this" -> "module.job_queue.aws_sqs_queue.job_queue";
+  "module.producer_lambda.aws_lambda_function.this" -> "module.job_table.aws_dynamodb_table.this";
+  "module.producer_lambda.aws_lambda_function.this" -> "module.producer_lambda.aws_iam_role_policy_attachment.lambda_basic";
+  "module.producer_lambda.aws_lambda_function.this" -> "module.producer_lambda.aws_s3_object.function_zip";
+  "module.producer_lambda.aws_s3_bucket.artifacts" -> "module.producer_lambda.random_id.bucket_suffix";
+  "module.producer_lambda.aws_s3_object.function_zip" -> "module.producer_lambda.aws_s3_bucket.artifacts";
+  "module.worker_lambda.aws_iam_role_policy.lambda_worker_permissions" -> "module.job_queue.aws_sqs_queue.job_queue";
+  "module.worker_lambda.aws_iam_role_policy.lambda_worker_permissions" -> "module.job_table.aws_dynamodb_table.this";
+  "module.worker_lambda.aws_iam_role_policy.lambda_worker_permissions" -> "module.worker_lambda.aws_iam_role.lambda_exec";
+  "module.worker_lambda.aws_iam_role_policy_attachment.lambda_basic" -> "module.worker_lambda.aws_iam_role.lambda_exec";
+  "module.worker_lambda.aws_lambda_event_source_mapping.from_sqs" -> "module.job_queue.aws_sqs_queue.job_queue";
+  "module.worker_lambda.aws_lambda_event_source_mapping.from_sqs" -> "module.worker_lambda.aws_lambda_function.worker_lambda";
+  "module.worker_lambda.aws_lambda_function.worker_lambda" -> "module.worker_lambda.aws_athena_workgroup.dash_wg";
+  "module.worker_lambda.aws_lambda_function.worker_lambda" -> "module.worker_lambda.aws_iam_role_policy_attachment.lambda_basic";
+}

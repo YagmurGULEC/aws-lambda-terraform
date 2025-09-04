@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
+import Image from "next/image";
 import type { Data as PlotData, Layout } from "plotly.js";
 
 const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
@@ -217,9 +218,11 @@ export default function JobWithCharts() {
 
   return (
     <div className="min-h-screen grid place-items-center p-6">
-      <main className="w-full max-w-3xl space-y-6">
+      <main className="w-full max-w-6xl space-y-6 px-4">
         <header className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold">Data Distribution from Athena</h1>
+
+          <h1 className="text-2xl font-semibold">Athena-Powered Dashboard with SQS/Lambda Backend</h1>
+
           <button
             onClick={run}
             className="rounded-md border px-3 py-1.5 text-sm hover:bg-black/5 dark:hover:bg-white/10"
@@ -228,7 +231,20 @@ export default function JobWithCharts() {
             {status === "running" || status === "queued" ? "Running…" : "Run again"}
           </button>
         </header>
+        <div className="space-y-2 w-full">
 
+
+          <div className="w-full overflow-hidden rounded-lg border">
+            <Image
+              src="/graph.svg"
+              alt="Graph"
+              width={1600}
+              height={900}
+              className="w-full h-auto"
+            />
+          </div>
+          <h1 className="text-2xl font-semibold">SQL-Based Label Statistics and Stratified Dataset Partitioning for Object Detection Using the Pascal VOC Dataset</h1>
+        </div>
         {(status === "queued" || status === "running") && (
           <div className="space-y-2">
             <div className="w-full h-3 rounded bg-black/10 dark:bg-white/10 overflow-hidden">
@@ -248,7 +264,7 @@ export default function JobWithCharts() {
         )}
 
         <div className="rounded border p-4 space-y-1 text-sm">
-          <p><strong>Job ID:</strong> {jobId ?? "—"}</p>
+
           {err && <p className="text-red-600"><strong>Error:</strong> {err}</p>}
         </div>
 
