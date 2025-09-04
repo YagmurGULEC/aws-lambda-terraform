@@ -26,6 +26,7 @@ const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE ??
   "https://baau72q1kd.execute-api.us-east-1.amazonaws.com/Prod";
 
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
 // Type guard: checks unknown → ApiResult
 function isApiResult(x: unknown): x is ApiResult {
   if (typeof x !== "object" || x === null) return false;
@@ -236,7 +237,7 @@ export default function JobWithCharts() {
 
           <div className="w-full overflow-hidden rounded-lg border">
             <Image
-              src="/graph.svg"
+              src={`${basePath}/graph.svg`}
               alt="Graph"
               width={1600}
               height={900}
