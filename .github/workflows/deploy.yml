@@ -10,7 +10,6 @@ permissions:
   pages: write
   id-token: write
 
-# 👇 All `run:` commands execute inside ./dashboard
 defaults:
   run:
     working-directory: dashboard
@@ -25,11 +24,19 @@ jobs:
         with:
           node-version: '20'
           cache: 'pnpm'
-          # cache lockfile in the subfolder
           cache-dependency-path: dashboard/pnpm-lock.yaml
 
-      - name: Install pnpm
-        run: npm i -g pnpm
+      # EITHER use the pnpm action…
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+          run_install: false
+
+      # …OR use Corepack instead (remove the action above if you use this)
+      # - name: Enable pnpm via Corepack
+      #   run: |
+      #     corepack enable
+      #     corepack prepare pnpm@9 --activate
 
       - name: Install deps
         run: pnpm install --frozen-lockfile
@@ -37,11 +44,12 @@ jobs:
       - name: Build static site
         env:
           NODE_ENV: production
-        run: pnpm build   # -> writes ./dashboard/out because Next output:'export'
+          GH_PAGES: "true"
+        run: pnpm build  # writes ./dashboard/out
 
       - name: Deploy to gh-pages branch
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dashboard/out     # 👈 path relative to repo root
+          publish_dir: ./dashboard/out
           publish_branch: gh-pages
