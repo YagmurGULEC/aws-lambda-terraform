@@ -2,13 +2,18 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [ main ]   # or your default branch
+    branches: [ feature/dash-lambda ]
   workflow_dispatch: {}
 
 permissions:
   contents: write
   pages: write
   id-token: write
+
+# 👇 All `run:` commands execute inside ./dashboard
+defaults:
+  run:
+    working-directory: dashboard
 
 jobs:
   build:
@@ -20,6 +25,8 @@ jobs:
         with:
           node-version: '20'
           cache: 'pnpm'
+          # cache lockfile in the subfolder
+          cache-dependency-path: dashboard/pnpm-lock.yaml
 
       - name: Install pnpm
         run: npm i -g pnpm
@@ -30,11 +37,11 @@ jobs:
       - name: Build static site
         env:
           NODE_ENV: production
-        run: pnpm build   # produces ./out due to output:'export'
+        run: pnpm build   # -> writes ./dashboard/out because Next output:'export'
 
       - name: Deploy to gh-pages branch
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./out
+          publish_dir: ./dashboard/out     # 👈 path relative to repo root
           publish_branch: gh-pages

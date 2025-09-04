@@ -1,7 +1,13 @@
 import type { NextConfig } from "next";
+const isGH = process.env.GH_PAGES === "true";
+const repo = "aws-lambda-terraform"; // project page path
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  output: "export",
+  basePath: isGH ? `/${repo}` : "",
+  assetPrefix: isGH ? `/${repo}/` : "",
+  images: { unoptimized: true },
+  trailingSlash: true,
 };
 
 export default nextConfig;

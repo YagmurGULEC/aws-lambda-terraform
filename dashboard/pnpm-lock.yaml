@@ -33,12 +33,18 @@ importers:
       '@types/node':
         specifier: ^20
         version: 20.19.12
+      '@types/plotly.js':
+        specifier: ^3.0.3
+        version: 3.0.3
       '@types/react':
         specifier: ^19
         version: 19.1.12
       '@types/react-dom':
         specifier: ^19
         version: 19.1.9(@types/react@19.1.12)
+      '@types/react-plotly.js':
+        specifier: ^2.6.3
+        version: 2.6.3
       eslint:
         specifier: ^9
         version: 9.34.0(jiti@2.5.1)
@@ -543,10 +549,16 @@ packages:
   '@types/pbf@3.0.5':
     resolution: {integrity: sha512-j3pOPiEcWZ34R6a6mN07mUkM4o4Lwf6hPNt8eilOeZhTFbxFXmKhvXl9Y28jotFPaI1bpPDJsbCprUoNke6OrA==}
 
+  '@types/plotly.js@3.0.3':
+    resolution: {integrity: sha512-9CENH8hh2diOML3o4lEd4H0nwQ4uECEE9mZQc+zriGEdd0zK8ru75t7qFhaMQmiWFFPGWqI4FpodBZFTmWpdbQ==}
+
   '@types/react-dom@19.1.9':
     resolution: {integrity: sha512-qXRuZaOsAdXKFyOhRBg6Lqqc0yay13vN7KrIg4L7N4aaHN68ma9OK3NE1BoDFgFOTfM7zg+3/8+2n8rLUH3OKQ==}
     peerDependencies:
       '@types/react': ^19.0.0
+
+  '@types/react-plotly.js@2.6.3':
+    resolution: {integrity: sha512-HBQwyGuu/dGXDsWhnQrhH+xcJSsHvjkwfSRjP+YpOsCCWryIuXF78ZCBjpfgO3sCc0Jo8sYp4NOGtqT7Cn3epQ==}
 
   '@types/react@19.1.12':
     resolution: {integrity: sha512-cMoR+FoAf/Jyq6+Df2/Z41jISvGZZ2eTlnsaJRptmZ76Caldwy1odD4xTr/gNV9VLj0AWgg/nmkevIyUfIIq5w==}
@@ -3081,8 +3093,15 @@ snapshots:
 
   '@types/pbf@3.0.5': {}
 
+  '@types/plotly.js@3.0.3': {}
+
   '@types/react-dom@19.1.9(@types/react@19.1.12)':
     dependencies:
+      '@types/react': 19.1.12
+
+  '@types/react-plotly.js@2.6.3':
+    dependencies:
+      '@types/plotly.js': 3.0.3
       '@types/react': 19.1.12
 
   '@types/react@19.1.12':
