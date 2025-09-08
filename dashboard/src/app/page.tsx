@@ -244,6 +244,15 @@ export default function JobWithCharts() {
               className="w-full h-auto"
             />
           </div>
+          <div className="w-full overflow-hidden rounded-lg border">
+            <Image
+              src={`${basePath}/BalancedData.drawio.svg`}
+              alt="Graph"
+              width={1600}
+              height={900}
+              className="w-full h-auto"
+            />
+          </div>
           <h1 className="text-2xl font-semibold">SQL-Based Label Statistics and Stratified Dataset Partitioning for Object Detection Using the Pascal VOC Dataset</h1>
         </div>
         {(status === "queued" || status === "running") && (
